@@ -5,7 +5,7 @@ import { friendService } from "@/lib/services/friendService"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar"
-import { User, UserPlus, Check, X } from "lucide-react"
+import { User, UserPlus, Check, X, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/Input"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
@@ -76,6 +76,17 @@ export function FriendsList() {
         }
     }
 
+    async function handleRemoveFriend(id: string) {
+        if (!confirm("Are you sure you want to remove this friend?")) return
+        try {
+            await friendService.removeFriend(id)
+            toast.success("Friend removed")
+            loadData()
+        } catch (error: any) {
+            toast.error(error.message)
+        }
+    }
+
     return (
         <div className="grid gap-6 md:grid-cols-2">
             <Card>
@@ -96,6 +107,15 @@ export function FriendsList() {
                                     <p className="text-xs text-muted-foreground">@{item.profile.username}</p>
                                 </div>
                             </div>
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-100"
+                                onClick={() => handleRemoveFriend(item.friendshipId)}
+                                title="Remove Friend"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
                     ))}
                 </CardContent>

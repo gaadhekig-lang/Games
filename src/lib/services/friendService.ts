@@ -10,9 +10,8 @@ export const friendService = {
         const { data: existing } = await supabase
             .from("friends")
             .select("*")
-            .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
-            .or(`requester_id.eq.${friendId},receiver_id.eq.${friendId}`)
-            .single()
+            .or(`and(requester_id.eq.${user.id},receiver_id.eq.${friendId}),and(requester_id.eq.${friendId},receiver_id.eq.${user.id})`)
+            .maybeSingle()
 
         if (existing) {
             if (existing.status === 'accepted') throw new Error("Already friends")
@@ -50,6 +49,16 @@ export const friendService = {
         if (error) throw error
     },
 
+    async removeFriend(friendshipId: string) {
+        const supabase = createClient()
+        const { error } = await supabase
+            .from("friends")
+            .delete()
+            .eq("id", friendshipId)
+
+        if (error) throw error
+    },
+
     async getFriends() {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
@@ -69,13 +78,22 @@ export const friendService = {
         if (!data) return []
 
         // Normalize data to return just the friend profile
-        return data.map((f: any) => {
+        const friends = data.map((f: any) => {
             const isUserSender = f.requester_id === user.id
             return {
                 friendshipId: f.id,
                 profile: isUserSender ? f.receiver : f.requester
             }
         })
+
+        // Deduplicate by profile ID
+        const uniqueFriends = friends.filter((friend, index, self) =>
+            index === self.findIndex((t) => (
+                t.profile.id === friend.profile.id
+            ))
+        )
+
+        return uniqueFriends
     },
 
     async getPendingRequests() {
