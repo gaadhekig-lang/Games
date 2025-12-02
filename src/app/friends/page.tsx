@@ -32,7 +32,7 @@ export default function FriendsPage() {
     }
 
     return (
-        <div className="container py-8 space-y-8">
+        <div className="container py-8 space-y-8 pt-24 md:pt-32">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h1 className="text-3xl font-bold font-retro-heading text-[#3e2723]">Social Hub</h1>
 

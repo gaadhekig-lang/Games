@@ -6,6 +6,8 @@ export const friendService = {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) throw new Error("Not authenticated")
 
+        if (friendId === user.id) throw new Error("Cannot add yourself")
+
         // Check if already friends or request sent
         const { data: existing } = await supabase
             .from("friends")
@@ -69,6 +71,8 @@ export const friendService = {
             .select(`
         id,
         status,
+        requester_id,
+        receiver_id,
         requester:users!friends_requester_id_fkey(*),
         receiver:users!friends_receiver_id_fkey(*)
       `)
@@ -86,8 +90,9 @@ export const friendService = {
             }
         })
 
-        // Deduplicate by profile ID
+        // Filter out self-friendships and deduplicate by profile ID
         const uniqueFriends = friends.filter((friend, index, self) =>
+            friend.profile.id !== user.id &&
             index === self.findIndex((t) => (
                 t.profile.id === friend.profile.id
             ))

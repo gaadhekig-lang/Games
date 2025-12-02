@@ -36,10 +36,13 @@ export function FriendsList() {
 
     async function handleSearch() {
         if (!searchQuery.trim()) return
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+
         const { data } = await supabase
             .from("users")
             .select("*")
             .ilike("username", `%${searchQuery}%`)
+            .neq("id", currentUser?.id)
             .limit(5)
 
         setSearchResults(data || [])
