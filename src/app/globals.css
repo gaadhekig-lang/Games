@@ -1,0 +1,88 @@
+/* Import Retro Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  /* Pixel Art Theme Colors */
+  --pixel-sky: #5c94fc;
+  --pixel-ground: #c84c0c;
+  --pixel-primary: #e60012;
+  /* Mario Red */
+  --pixel-secondary: #ffde00;
+  /* Coin Gold */
+  --pixel-text: #000000;
+  --pixel-white: #ffffff;
+
+  --background: var(--pixel-sky);
+  --foreground: var(--pixel-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-retro-heading: 'Press Start 2P', cursive;
+  --font-retro-body: 'Share Tech Mono', monospace;
+
+  --color-pixel-primary: var(--pixel-primary);
+  --color-pixel-secondary: var(--pixel-secondary);
+  --color-pixel-ground: var(--pixel-ground);
+}
+
+body {
+  background: var(--pixel-sky);
+  color: var(--foreground);
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+}
+
+/* Pixel Art Utilities */
+.pixel-border {
+  box-shadow:
+    -4px 0 0 0 black,
+    4px 0 0 0 black,
+    0 -4px 0 0 black,
+    0 4px 0 0 black;
+  margin: 4px;
+}
+
+.pixel-border-sm {
+  box-shadow:
+    -2px 0 0 0 black,
+    2px 0 0 0 black,
+    0 -2px 0 0 black,
+    0 2px 0 0 black;
+  margin: 2px;
+}
+
+.pixel-text-shadow {
+  text-shadow: 2px 2px 0px #ffffff;
+}
+
+.pixel-text-shadow-white {
+  text-shadow: 2px 2px 0px #000000;
+}
+
+.pixel-text-stroke {
+  text-shadow:
+    -3px -3px 0 #000,
+    3px -3px 0 #000,
+    -3px 3px 0 #000,
+    3px 3px 0 #000,
+    6px 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Animations */
+@keyframes scroll-bg {
+  from {
+    background-position: 0 bottom;
+  }
+
+  to {
+    background-position: -100% bottom;
+  }
+}
+
+.animate-scroll {
+  animation: scroll-bg 20s linear infinite;
+}
