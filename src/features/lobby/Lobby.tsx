@@ -449,7 +449,7 @@ export function Lobby({ roomId }: LobbyProps) {
                                         </div>
                                         <div className="min-w-0">
                                             <p className="font-retro-body font-bold text-[#3e2723] truncate">
-                                                {player.user?.display_name || "Unknown"}
+                                                {player.user?.display_name || player.user?.username || "Unknown"}
                                             </p>
                                             {player.is_host && (
                                                 <span className="text-[10px] font-retro-heading text-[#c84c0c] uppercase">

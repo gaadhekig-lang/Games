@@ -132,11 +132,11 @@ export function TicTacToe({ roomId, matchId, initialState, onRestart, onBackToLo
             }, 500) // Delay for realism
             return () => clearTimeout(timer)
         }
-    }, [currentTurn, winner, players, currentUser, board])
+    }, [currentTurn, winner, currentUser, players])
 
     function makeAIMove() {
-        // Simple Random AI for MVP
-        const availableIndices = board.map((cell, index) => cell === null ? index : null).filter(val => val !== null) as number[]
+        // Simple AI: try to win, then block, then random
+        const availableIndices = board.map((val, idx) => val === null ? idx : null).filter((val): val is number => val !== null)
 
         if (availableIndices.length === 0) return
 
@@ -145,7 +145,7 @@ export function TicTacToe({ roomId, matchId, initialState, onRestart, onBackToLo
             const tempBoard = [...board]
             tempBoard[index] = currentTurn
             if (calculateWinner(tempBoard) === currentTurn) {
-                handleMove(index, true) // Pass true to bypass isMyTurn check
+                handleMove(index, true)
                 return
             }
         }
@@ -253,77 +253,57 @@ export function TicTacToe({ roomId, matchId, initialState, onRestart, onBackToLo
             </div>
 
             {/* Game Board */}
-            <div className="relative bg-[#3e2723] p-2 md:p-4 rounded-sm border-4 border-[#5d3a1a] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] mx-4">
-                <div className="grid grid-cols-3 gap-1 md:gap-2 bg-[#3e2723] p-1 md:p-2">
-                    {board.map((cell, index) => (
-                        <Button
-                            key={index}
-                            variant="ghost"
-                            className={cn(
-                                "h-20 w-20 md:h-32 md:w-32 text-4xl md:text-8xl font-retro-heading rounded-none transition-all duration-200",
-                                "bg-[#2d1b15] hover:bg-[#4a302a] border-2 border-transparent", // Darker wood for cells
-                                cell === "X" && "text-[#0099db]", // Retro Blue for X
-                                cell === "O" && "text-[#e31e33]", // Retro Red for O
-                                !cell && !winner && isMyTurn && "hover:border-white/20"
-                            )}
-                            onClick={() => handleMove(index)}
-                            disabled={!!cell || !isMyTurn || !!winner}
-                        >
-                            {cell}
-                        </Button>
-                    ))}
-                </div>
+            <div className="grid grid-cols-3 gap-4 p-6 bg-black/20 backdrop-blur-sm pixel-border border-4 border-white/30">
+                {board.map((square, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handleMove(index)}
+                        disabled={!!square || !isMyTurn || !!winner}
+                        className={cn(
+                            "w-24 h-24 md:w-32 md:h-32 bg-white/90 hover:bg-white pixel-border border-4 border-black flex items-center justify-center text-6xl md:text-7xl font-bold transition-all duration-200",
+                            square === "X" && "text-blue-600",
+                            square === "O" && "text-red-600",
+                            !square && isMyTurn && !winner && "cursor-pointer hover:scale-105 active:scale-95",
+                            (square || !isMyTurn || winner) && "cursor-not-allowed opacity-60"
+                        )}
+                    >
+                        {square === "X" && <X />}
+                        {square === "O" && <Circle />}
+                    </button>
+                ))}
             </div>
 
-            {/* Bottom Bar */}
-            <div className="fixed bottom-4 left-0 right-0 p-4 z-20 flex justify-center gap-8 pointer-events-none">
-                <Button
-                    className="w-48 bg-[#5d4037] text-white font-retro-heading border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#3e2723] active:translate-y-1 active:shadow-none transition-all pointer-events-auto"
-                    onClick={() => setShowChat(true)}
-                >
-                    CHAT
-                </Button>
-            </div>
+            {/* Chat Toggle */}
+            <Button
+                onClick={() => setShowChat(!showChat)}
+                variant="ghost"
+                className="fixed bottom-4 right-4 bg-white/10 hover:bg-white/20 text-white pixel-border border-2 border-white/50"
+            >
+                {showChat ? "HIDE CHAT" : "SHOW CHAT"}
+            </Button>
 
-            {/* Chat Modal */}
+            {/* Chat Sidebar */}
             <AnimatePresence>
                 {showChat && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 pointer-events-auto">
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="bg-[#e6d5aa] p-1 w-full max-w-md h-[60vh] pixel-border border-4 border-[#8b4513] shadow-2xl relative flex flex-col"
-                        >
-                            <div className="flex justify-between items-center p-2 border-b-2 border-[#8b4513] bg-[#d4c59a]">
-                                <h2 className="text-lg font-retro-heading text-[#3e2723]">CHAT</h2>
-                                <button
-                                    onClick={() => setShowChat(false)}
-                                    className="p-1 hover:bg-black/10 rounded font-retro-heading text-[#8b4513]"
-                                >
-                                    CLOSE
-                                </button>
-                            </div>
-                            <Chat roomId={roomId} className="flex-1 p-2" />
-                        </motion.div>
-                    </div>
+                    <motion.div
+                        initial={{ x: 400 }}
+                        animate={{ x: 0 }}
+                        exit={{ x: 400 }}
+                        className="fixed right-0 top-0 h-full w-80 bg-[#e6d5aa] pixel-border border-l-4 border-[#8b4513] z-40"
+                    >
+                        <Chat roomId={roomId} className="h-full" />
+                    </motion.div>
                 )}
             </AnimatePresence>
+
             {/* Winner Overlay */}
-            <AnimatePresence>
-                {winner && (
-                    <WinnerOverlay
-                        winnerName={
-                            winner === "DRAW"
-                                ? "It's a Draw!"
-                                : (Object.keys(players).find(k => players[k] === winner)
-                                    ? (playersInfo[Object.keys(players).find(k => players[k] === winner)!]?.name || "Unknown")
-                                    : "Unknown")
-                        }
-                        onBackToLobby={onBackToLobby}
-                    />
-                )}
-            </AnimatePresence>
+            {winner && (
+                <WinnerOverlay
+                    winner={winner === "DRAW" ? "DRAW" : playersInfo[Object.keys(players).find(key => players[key] === winner) || ""]?.name || winner}
+                    onRestart={onRestart}
+                    onBackToLobby={onBackToLobby}
+                />
+            )}
         </div>
     )
 }
